@@ -11,4 +11,3 @@
 ## Deploy on Vercel
 Push to GitHub -> vercel.com -> Import -> Framework: Vite (auto) -> Deploy.
 Build command: `npm run build`  Output: `dist`
-# kernello

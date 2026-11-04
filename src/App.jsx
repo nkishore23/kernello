@@ -145,7 +145,7 @@ function Hero({ add }) {
     <section id="nuts" className={'hero ' + (n.dark ? 'dark' : 'light')} style={{ '--c': n.color }}>
       {NUTS.map((x, k) => (
         <video key={x.id} ref={(el) => (refs.current[k] = el)} className={'hv' + (k === i ? ' on' : '')}
-          src={x.video} muted playsInline loop preload={k === i || k === (i + 1) % NUTS.length ? 'auto' : 'none'} />
+          src={x.video} muted playsInline loop preload={k === i ? 'auto' : 'none'} />
       ))}
       <div className="scrim" />
       <div className="htext" key={n.id}>
@@ -190,7 +190,7 @@ function Story() {
     <section id="story" ref={box} className="story">
       <div className="pin">
         {STORY.map((s, k) => (
-          <video key={k} ref={(el) => (refs.current[k] = el)} className={k === idx ? 'on' : ''} src={s.video} muted playsInline loop preload="metadata" />
+          <video key={k} ref={(el) => (refs.current[k] = el)} className={k === idx ? 'on' : ''} src={s.video} muted playsInline loop preload={Math.abs(k - idx) <= 1 ? 'metadata' : 'none'} />
         ))}
         <div className="shade" />
         <span className="eyebrow">From farm to your hands</span>
@@ -214,9 +214,9 @@ function Builder({ onAdd }) {
     <section id="build" className="build" style={{ background: bg }}>
       <h2 className="rv">Crack it. <em>Mix it.</em> Snap it.</h2>
       <div className="bgrid rv">
-        <div className="vwrap"><video src={JAR_VIDEO} autoPlay muted loop playsInline /></div>
+        <div className="vwrap"><LazyVideo src={JAR_VIDEO} /></div>
         <div className="panel">
-          <h4>Pick up to three nuts</h4>
+          <p className="lbl">Pick up to three nuts</p>
           <div className="picker">
             {NUTS.map((n) => (
               <button key={n.id} disabled={layers.length >= 3} onClick={() => setLayers([...layers, n.id])}>
@@ -348,7 +348,9 @@ function Cart({ open, onClose, cart, qty }) {
           ))}
         </div>
         <footer><div><span>Total</span><b>₹{total}</b></div>
-          <a className={'cta' + (cart.length ? '' : ' off')} target="_blank" rel="noreferrer" href={cart.length ? wa(msg) : undefined}>Checkout on WhatsApp</a>
+          {cart.length
+            ? <a className="cta" target="_blank" rel="noreferrer" href={wa(msg)}>Checkout on WhatsApp</a>
+            : <span className="cta off">Checkout on WhatsApp</span>}
         </footer>
       </aside>
     </>
@@ -481,4 +483,18 @@ function GiftVid({ src }) {
     return () => io.disconnect()
   }, [])
   return <div className="gvid"><video ref={ref} src={src} muted loop playsInline preload="metadata" /></div>
+}
+
+function LazyVideo({ src }) {
+  const ref = useRef(null)
+  useEffect(() => {
+    const io = new IntersectionObserver(([e]) => {
+      const v = ref.current
+      if (!v) return
+      if (e.isIntersecting) v.play().catch(() => {}); else v.pause()
+    }, { threshold: 0.25 })
+    io.observe(ref.current)
+    return () => io.disconnect()
+  }, [])
+  return <video ref={ref} src={src} muted loop playsInline preload="none" />
 }

@@ -242,3 +242,9 @@ h2.rv.in{animation-name:hrv}
 .gvid{margin:-28px -28px 8px;aspect-ratio:16/10;overflow:hidden}
 .gvid video{width:100%;height:100%;object-fit:cover;display:block;transition:transform .8s}
 .gcard:hover .gvid video{transform:scale(1.06)}
+
+/* v8: accessibility contrast + heading fix */
+.panel .lbl{font-size:12px;letter-spacing:.2em;text-transform:uppercase;opacity:.75;font-weight:700}
+.htext small{opacity:.92}.cinfo small{opacity:.92}.sgrid small{opacity:.8}.stats small{opacity:.75}
+.foot p{opacity:.8}.mute{opacity:.7}.rgrid figcaption small{opacity:.78}.eyebrow{opacity:.92}.count{opacity:.9}
+.item small{opacity:.75}
