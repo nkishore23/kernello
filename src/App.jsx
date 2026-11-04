@@ -3,6 +3,10 @@ import Lenis from 'lenis'
 import { NUTS, STORY, SHOP, JAR_VIDEO, WEIGHTS, price, FREE_SHIP, MARQUEE, STATS, REVIEWS, SUBSCRIBE_URL, FESTIVAL, GIFTS, INFO } from './data'
 
 const clamp = (n, a, b) => Math.min(b, Math.max(a, n))
+// phones get the smaller "-m" video; every video has a .jpg poster so something shows instantly
+const MOBILE = typeof matchMedia !== 'undefined' && matchMedia('(max-width:700px)').matches
+const V = (p) => (MOBILE ? p.replace('.mp4', '-m.mp4') : p)
+const P = (p) => p.replace('.mp4', '.jpg')
 const wa = (text) => `https://wa.me/${SHOP.whatsapp}?text=${encodeURIComponent(text)}`
 
 export default function App() {
@@ -76,7 +80,7 @@ export default function App() {
     let id
     const raf = (t) => { lenis.raf(t); id = requestAnimationFrame(raf) }
     id = requestAnimationFrame(raf)
-    const t = setTimeout(() => setReady(true), 1100)
+    const t = setTimeout(() => setReady(true), 800)
     return () => { cancelAnimationFrame(id); lenis.destroy(); clearTimeout(t) }
   }, [])
 
@@ -145,7 +149,7 @@ function Hero({ add }) {
     <section id="nuts" className={'hero ' + (n.dark ? 'dark' : 'light')} style={{ '--c': n.color }}>
       {NUTS.map((x, k) => (
         <video key={x.id} ref={(el) => (refs.current[k] = el)} className={'hv' + (k === i ? ' on' : '')}
-          src={x.video} muted playsInline loop preload={k === i ? 'auto' : 'none'} />
+          src={V(x.video)} poster={P(x.video)} muted playsInline loop preload={k === i ? 'auto' : 'none'} />
       ))}
       <div className="scrim" />
       <div className="htext" key={n.id}>
@@ -190,7 +194,7 @@ function Story() {
     <section id="story" ref={box} className="story">
       <div className="pin">
         {STORY.map((s, k) => (
-          <video key={k} ref={(el) => (refs.current[k] = el)} className={k === idx ? 'on' : ''} src={s.video} muted playsInline loop preload={Math.abs(k - idx) <= 1 ? 'metadata' : 'none'} />
+          <video key={k} ref={(el) => (refs.current[k] = el)} className={k === idx ? 'on' : ''} src={V(s.video)} poster={P(s.video)} muted playsInline loop preload={Math.abs(k - idx) <= 1 ? 'metadata' : 'none'} />
         ))}
         <div className="shade" />
         <span className="eyebrow">From farm to your hands</span>
@@ -214,7 +218,7 @@ function Builder({ onAdd }) {
     <section id="build" className="build" style={{ background: bg }}>
       <h2 className="rv">Crack it. <em>Mix it.</em> Snap it.</h2>
       <div className="bgrid rv">
-        <div className="vwrap"><LazyVideo src={JAR_VIDEO} /></div>
+        <div className="vwrap"><LazyVideo src={V(JAR_VIDEO)} poster={P(JAR_VIDEO)} /></div>
         <div className="panel">
           <p className="lbl">Pick up to three nuts</p>
           <div className="picker">
@@ -265,7 +269,7 @@ function Shop({ add }) {
           return (
             <article key={n.id} className="card rv" style={{ background: n.color, '--d': k * 0.1 + 's' }} onMouseMove={tilt} onMouseLeave={untilt}>
               <div className="vclip" onClick={() => setSel(n)} style={{ cursor: 'pointer' }}>
-                <video src={n.video + '#t=1.5'} muted playsInline preload="metadata"
+                <video src={V(n.video)} poster={P(n.video)} muted loop playsInline preload="none"
                   onMouseEnter={(e) => e.currentTarget.play()} onMouseLeave={(e) => e.currentTarget.pause()} />
               </div>
               <div className={'cinfo ' + (n.dark ? 'dark' : 'light')}>
@@ -431,7 +435,7 @@ function Gifts({ onAdd }) {
       <div className="ggrid">
         {GIFTS.map((g, k) => (
           <article key={g.id} className="gcard rv" style={{ '--d': k * 0.12 + 's' }}>
-            <GiftVid src={`/gifts/gift-${g.id}.mp4#t=0.5`} />
+            <GiftVid src={`/gifts/gift-${g.id}.mp4`} />
             <h3>{g.name}</h3><p>{g.desc}</p>
             <div className="buy"><b>₹{g.price}</b>
               <button className="plus" aria-label="Add" onClick={() => onAdd({ k: 'gift-' + g.id, name: g.name, sub: g.desc, color: '#F7C873', unit: g.price })}>+</button>
@@ -455,7 +459,7 @@ function Modal({ nut, onClose, add }) {
       <div className="veil on" onClick={onClose} />
       <div className={'modal ' + (nut.dark ? 'dark' : 'light')} style={{ background: nut.color }} data-lenis-prevent>
         <button className="x" onClick={onClose} aria-label="Close">✕</button>
-        <video src={nut.video} autoPlay muted loop playsInline />
+        <video src={V(nut.video)} poster={P(nut.video)} autoPlay muted loop playsInline />
         <div className="mbody">
           <small>{nut.origin}</small><h3>{nut.name}</h3><p>{nut.desc}</p>
           <div className="nf">
@@ -482,10 +486,10 @@ function GiftVid({ src }) {
     io.observe(ref.current)
     return () => io.disconnect()
   }, [])
-  return <div className="gvid"><video ref={ref} src={src} muted loop playsInline preload="metadata" /></div>
+  return <div className="gvid"><video ref={ref} src={V(src)} poster={P(src)} muted loop playsInline preload="none" /></div>
 }
 
-function LazyVideo({ src }) {
+function LazyVideo({ src, poster }) {
   const ref = useRef(null)
   useEffect(() => {
     const io = new IntersectionObserver(([e]) => {
@@ -496,5 +500,5 @@ function LazyVideo({ src }) {
     io.observe(ref.current)
     return () => io.disconnect()
   }, [])
-  return <video ref={ref} src={src} muted loop playsInline preload="none" />
+  return <video ref={ref} src={src} poster={poster} muted loop playsInline preload="none" />
 }
